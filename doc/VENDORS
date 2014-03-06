@@ -1,0 +1,13 @@
+A list of foreign components and frameworks used by nagtrap:
+
+	* script.aculo.us
+	  Cross browser user interface JavaScript libraries
+	  http://script.aculo.us/ (MIT)
+
+	  share/include/js/MIT-LICENSE
+
+	* Icons Dropline Neu!
+	  Gnome Icons
+	  http://art.gnome.org/themes/icon/1100 (GPLv2)
+
+	  share/images/dropline/COPYING

@@ -1,0 +1,54 @@
+8
+
+dir
+59
+https://nagtrap.svn.sourceforge.net/svnroot/nagtrap/trunk/nagtrap/include/xml/language/DE
+https://nagtrap.svn.sourceforge.net/svnroot/nagtrap
+
+
+
+2007-12-29T14:00:06.860435Z
+56
+MiCkEy2002
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+3b3bb11e-ce18-0410-a009-abf3b6cb3715
+
+main.xml
+file
+
+
+
+
+2008-07-03T18:01:41.000000Z
+bbe65dc16af4d71e89c85c37cf7b5b3c
+2007-12-29T14:00:06.860435Z
+56
+MiCkEy2002
+has-props
+
+error.xml
+file
+
+
+
+
+2008-07-03T18:01:41.000000Z
+c408dcdef1ee60644e0e55435a54a214
+2007-12-13T10:09:15.712654Z
+44
+MiCkEy2002
+has-props
+

@@ -1,0 +1,272 @@
+1. Installation
+==========================
+
+Follow components are included in the package:
+
+    The Webinterface
+    The Plugin check_snmptraps.pl ( Perl-Script )
+    The sql script snmptt-<version>.sql to create your mysql database
+
+1.2 Create database
+--------------------------
+
+First create a database snmptt. You can do that with follow command:
+
+ mysqladmin create snmptt
+
+Now create the tables:
+
+ mysql -u root -p snmptt < snmptt-<version>.sql
+
+The structure differs slightly from the original, but it is completely compatible.
+
+
+2. Configuration
+==========================
+
+All preference for NagTrap can you configure in nagtrap/etc/config.ini.php.
+
+2.1 Globale Preferences
+--------------------------
+language = EN
+Select here a language (EN = English / DE = German)
+
+    Englisch = EN
+    German = DE
+
+useAuthentification = 1
+When you will use a authentification, then enable this option (0=off / 1=on)
+
+    Off = 0
+    On = 1
+
+allowedUser = nagiosadmin
+If you use the authentification, then entry here the User that may changes on the Web-Frontend comma seperated.
+
+useUnknownTraps = 1
+When you use a database for unknown-Traps, then enable this option (0=off / 1=on) If you enable this option, then you musst have a table in your database for unknown traps.
+
+    Off = 0
+    On = 1
+
+step = 30
+Entry here the number of traps, that you will see per side.
+
+images = ./images/
+Path to Image-Directory from your SNMP-Trap Frontend installation
+
+cutTrapMessage = 100
+Set here the Trap Message indicates to be cut off is after many indications. When set no parameter, the Trap-Messages wasn't cut.
+
+illegalCharJavabox = <,>,'
+Set here illegal charactars for output of the javabox
+
+2.2 Icinga / Nagios Preferences
+--------------------------
+
+prefix = /nagios
+Url to Icinga or Nagios
+
+images = ../images/
+Path to the Image-Dirctory from your Icinga or Nagios installation
+Database Prefences
+
+Enter here your information that were used to connect to your database
+
+host = localhost
+Set here your DNS-Name or IP-Adress for your MySQL-Database
+
+user = snmptt
+user = password = Set here the Username and Password for connection
+
+name = snmptt
+name = snmptt Set here the Databasname from your SNMPTT-Database
+
+tableSnmptt = snmptt
+tableSnmptt = snmptt Set here the Tablename
+
+2.3 Other Prefences
+--------------------------
+
+tableSnmpttUnk = snmptt_unknown
+Ignore this option, when you don`t use a table for unknown-Traps in your database
+
+3. Involvement in Icinga / Nagios
+==========================
+
+3.1 The Plugin check_snmptraps.pl
+--------------------------
+With the plugin, you can be certain traps on the DB and alarmed this. Even the issue of the message from a trap is possible.
+
+Prerequisite:
+Installation of Perl-Modul DBI
+
+Installation:
+Copy the Plugin in the libexec directory from Icinga or Nagios. Now you musst set follow database parameters in the plugin:
+
+my $dbHost = "localhost";
+my $dbName = "snmptt";
+my $dbUser = "root";
+my $dbPass = "";
+my $dbTable = "snmptt";
+
+That's it! 
+
+The Plugin in his parameters:
+
+   -H (--hostname)
+	Hostname to query - (required)
+   -S (--search)
+     search a expression in the message content
+   -C (--category)
+	Category from SNMP-Trap (optional)
+   -O (--oid)
+  	OID from SNMP-Trap (optional)
+   -w (--warning)
+	Check for warning traps in the database
+   -c (--critical)
+	Check for critical traps in the database
+   -u (--unknown)
+	Check for unknown traps in the database
+      (Default is set the option -w, -c and -u)
+   -r (--read)
+	Read marked traps from database too.
+   -m (--message)
+	Print Message from last read trap from database.
+	This option can only used with -w, -c or -u!
+   -t (--timeout)
+     seconds before the plugin times out (default=15)
+   -V (--version)
+     Plugin version
+   -h (--help)
+     Print this help
+
+A few examples how to call the plugin:
+
+ ./check_snmptraps.pl -H srv_tes_02 -m -c
+
+Output:
+
+ CRITICAL - 1 critical Trap: This was only a test message for NagTrap|'critical trap='1;;;;
+
+or
+
+ ./check_snmptraps.pl -H srv_tes_02 -m -c -O '.1.3.6.1.4.1.10418.2.1.3.0.27'
+
+Output:
+
+ CRITICAL - 1 critical Trap: This was only a test message for NagTrap|'critical trap='1;;;;
+
+etc. 
+
+3.2 Icinga / Nagios Service Extinfo
+--------------------------
+
+A example for the serviceextinfo in Nagios:
+
+define  serviceextinfo {
+        host_name                       < NAGIOS HOST >
+        service_description             SNMP Alerting
+        notes                           SNMP Alerts
+        notes_url                       http://<servername>/nagios/nagtrap/index.php?hostname=$HOSTADDRESS$
+        }
+
+For Icinga:
+
+define  serviceextinfo {
+        host_name                       < ICINGA HOST >
+        service_description             SNMP Alerting
+        notes                           SNMP Alerts
+        notes_url                       http://<servername>/icinga/nagtrap/index.php?hostname=$HOSTADDRESS$
+        }
+
+
+3.3 Integration in Icinga Classic UI
+--------------------------
+
+Attention:
+You musst change the path to icinga, if /usr/local/icinga not your default path!
+
+Edit follow file, to add a link in the icinga menu:
+
+/usr/local/icinga/share/menu.html
+
+Add here follow lines:
+
+<h2>AddOn's</h2>
+<ul>
+   <li class="menuli_style1"><a href="/icinga/nagtrap/index.php" target="main">NagTrap</a></li>
+</ul>
+
+Before:
+
+      <h2>Configuration</h2>
+      <ul>
+         <li class="menuli_style1"><a href="/icinga/cgi-bin/config.cgi" target="main">View Config</a></li>
+      </ul>
+   </div>
+</body>
+</html>
+
+After:
+
+      <h2>Configuration</h2>
+      <ul>
+         <li class="menuli_style1"><a href="/icinga/cgi-bin/config.cgi" target="main">View Config</a></li>
+      </ul>
+      <h2>AddOn's</h2>
+      <ul>
+         <li class="menuli_style1"><a href="/icinga/nagtrap/index.php" target="main">NagTrap</a></li>
+      </ul>
+   </div>
+</body>
+</html>
+
+3.4 Integration in Nagios
+--------------------------
+
+Attention:
+You musst change the path to nagios, if /usr/local/nagios not your default path!
+
+Edit follow file, to add a link in the nagios menu:
+
+/usr/local/nagios/share/side.php
+
+Add here follow lines:
+
+<li><a href="/nagios/nagtrap/index.php" target="<?php echo $link_target;?>">NagTrap</a></li>
+
+Before:
+
+<div class="navsection">
+<div class="navsectiontitle">System</div>
+<div class="navsectionlinks">
+<ul class="navsectionlinks">
+<li><a href="<?php echo $cfg["cgi_base_url"];?>/extinfo.cgi?type=3" target="<?php echo $link_target;?>">Comments</a></li>
+<li><a href="<?php echo $cfg["cgi_base_url"];?>/extinfo.cgi?type=6" target="<?php echo $link_target;?>">Downtime</a></li>
+<li><a href="<?php echo $cfg["cgi_base_url"];?>/extinfo.cgi?type=0" target="<?php echo $link_target;?>">Process Info</a></li>
+<li><a href="<?php echo $cfg["cgi_base_url"];?>/extinfo.cgi?type=4" target="<?php echo $link_target;?>">Performance Info</a></li>
+<li><a href="<?php echo $cfg["cgi_base_url"];?>/extinfo.cgi?type=7" target="<?php echo $link_target;?>">Scheduling Queue</a></li>
+<li><a href="<?php echo $cfg["cgi_base_url"];?>/config.cgi" target="<?php echo $link_target;?>">Configuration</a></li>
+</ul>
+</div>
+</div>
+
+After:
+
+<div class="navsection">
+<div class="navsectiontitle">System</div>
+<div class="navsectionlinks">
+<ul class="navsectionlinks">
+<li><a href="<?php echo $cfg["cgi_base_url"];?>/extinfo.cgi?type=3" target="<?php echo $link_target;?>">Comments</a></li>
+<li><a href="<?php echo $cfg["cgi_base_url"];?>/extinfo.cgi?type=6" target="<?php echo $link_target;?>">Downtime</a></li>
+<li><a href="<?php echo $cfg["cgi_base_url"];?>/extinfo.cgi?type=0" target="<?php echo $link_target;?>">Process Info</a></li>
+<li><a href="<?php echo $cfg["cgi_base_url"];?>/extinfo.cgi?type=4" target="<?php echo $link_target;?>">Performance Info</a></li>
+<li><a href="<?php echo $cfg["cgi_base_url"];?>/extinfo.cgi?type=7" target="<?php echo $link_target;?>">Scheduling Queue</a></li>
+<li><a href="<?php echo $cfg["cgi_base_url"];?>/config.cgi" target="<?php echo $link_target;?>">Configuration</a></li>
+<li><a href="/nagios/nagtrap/index.php" target="<?php echo $link_target;?>">NagTrap</a></li>
+</ul>
+</div>
+</div>
+
+

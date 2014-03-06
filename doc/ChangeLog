@@ -1,0 +1,129 @@
+By:     Michael Luebben
+Date:   18.05.2006
+Change: -Delete Stylesheets. The Frontend use now the Stylesheets from Nagios 
+        -Build in User authentifizierung. This can be disabled in the
+	configuration-File
+        -Fix little Bugs
+	
+By:     Michael Luebben
+Date:	26.06.2006
+Change: -Unknown-Traps can now disabled in the configuration-file
+
+By:	Michael Luebben
+Date:	25.07.2006
+Change: -Begun to revise the complete sourcecode
+	-Configuraion-File change to a INI-File
+
+By:	Michael Luebben
+Date:	29.07.2006
+Change: -Add XML-Parser for read xml-File
+	-Add XML-File with error-messages
+	
+By: 	Michael Luebben
+Date:	30.07.2006
+Change: -Add language-Support (xml-format)
+	-Add DB-Connection and more error-Information
+
+By:     Michael Luebben
+Date:   31.07.2006
+Change:	-Add Site functions
+	-Fix little bugs
+
+By:     Michael Luebben
+Date:   02.08.2006
+Change: -Add new Icons and a option in the configuration-file to select
+icon-styles for the frontend
+
+By:     Michael Luebben
+Date:   03.08.2006
+Change: -Make change on the frontend
+	- Fix little Bugs
+		
+By:     Michael Luebben
+Date:   05.08.2006
+Change: -Make change on the frontend
+		
+By:     Michael Luebben
+Date:   06.08.2006
+Change: -Add Footer
+
+By:	Michael Luebben
+Date:	09.08.2006
+Change:	-Add function to delete an mark more as one trap
+	-Finish first new beta-Version (0.1.0)
+
+By:     Michael Luebben
+Date:   11.08.2006
+Change: -Remove HTLM-Link form Trap-Message and make little changes THX pitchfork
+	-Fix Bug in config.ini.php THX Stoppard
+
+By:     Michael Luebben
+Date:   15.08.2006
+Change: -Fix little Bug with hostname selection
+
+By:     Michael Luebben
+Date:   18.09.2006
+Change: -Fix little Bug from Java-Box Output
+
+By:     Michael Luebben
+Date:   19.09.2006
+Change: -Create a new filter for category. IT IS NOT READY TO USE!!!
+
+By:     Michael Luebben
+Date:   26.09.2006
+Change: -Create a new filter for category. 
+	-Optimize Sourcecode
+	-Make little changes
+
+By:     Michael Luebben
+Date:   30.09.2006
+Change: -Added german language THX asa
+        -Fix bug with german characters (umlaute)
+
+By:	Michael Luebben
+Date:	28.02.2007
+Change:	-Fix bug. Selected attitude now don't lost, when delete or mark traps. THX Geringe Menge
+        -Fix bug with german characters (umlaute). This is a bug(#29302) in the
+	XML-Parser from PHP5!
+
+By:	Michael Luebben
+Date:	18.03.2007
+Change:	- Fix a bug in the Frontent "Last Update" THX kaile
+	- Fix a bug in the Output from Trap-Messages. Add new parameter
+	illegalCharJavabox in the config-File. THX Slammer
+	- Fix a bug in class.frontend.php THX Barntrup
+
+By:	Michael Luebben
+Date:	31.03.2007
+Change:	- Fix bug in languagefile
+	- Fix bug in category, when no trap in the database
+	- Fix bug in date from traps, when only one trap in the database
+	- Add first funktion to archive traps
+	- Add new iconsets dropline
+	- Delete Iconset KDE3
+
+By:	Michael Luebben
+Date:	10.06.2007
+Change:	- Fix bug in Plugin THX Andurin and algb
+
+By:	Michael Luebben
+Date:	13.10.2007
+Change:	- Change the name completly to nagtrap now
+		- Clean sourcecode
+
+By:	Michael Luebben
+Date:	14.10.2007
+Change:	- Fix Bug SF#1813740: Missing icons for archive
+
+By:     Michael Luebben
+Date:   24.01.2008
+Change: - Fix Bug in search
+
+By:	Michael Luebben
+Date:	06.02.2011
+Change: - Add job to archive and delete traps - Thx Adrian Kaegi for this patch
+
+By:	Michael Luebben
+Date:	20.02.2011
+Change:	-Add option -u in the plugin check_traps to check unknown traps in the database
+

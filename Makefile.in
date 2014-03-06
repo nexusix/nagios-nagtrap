@@ -1,0 +1,134 @@
+####################################################################
+# Makefile for NagTrap
+####################################################################
+
+###############################
+# Source code directories
+###############################
+SRC_SHARE=@srcdir@/share
+SRC_CONFIG=@srcdir@/etc
+SRC_PLUGIN=@srcdir@/plugin
+
+
+###############################
+# Compiler Settings
+###############################
+CC=@CC@
+CFLAGS=@CFLAGS@ @DEFS@
+LDFLAGS=@LDFLAGS@ @LIBS@
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+LOGDIR=@LOGDIR@
+CFGDIR=@sysconfdir@
+BINDIR=@bindir@
+INCDIR=@includedir@
+INSTALL=@INSTALL@
+INSTALL_OPTS=@INSTALL_OPTS@
+COMMAND_OPTS=@COMMAND_OPTS@
+HTMLDIR=@datarootdir@
+LOCALSTATEDIR=@localstatedir@
+HTTPD_CONF=@HTTPD_CONF@
+
+CP=@CP@
+PERL=@PERL@
+
+###############################
+# Tools
+###############################
+MKDIR=/bin/mkdir
+
+###############################
+# Global
+###############################
+PACKAGE_TARNAME=@PACKAGE_TARNAME@
+PACKAGE_NAME=@PACKAGE_NAME@
+PACKAGE_VERSION=@PACKAGE_VERSION@
+
+
+###############################
+# Installation
+###############################
+none:
+	@echo ""
+	@echo "*** Installation **********************************************"
+	@echo ""
+	@echo " make install"
+	@echo "     - Makes a completely installation for nagtrap"
+	@echo ""
+	@echo ""
+	@echo "*** Support Notes *******************************************"
+	@echo ""
+	@echo "If you have questions about configuring or running Icinga,"
+	@echo "please make sure that you:"
+	@echo ""
+	@echo "     - Look at the sample config files"
+	@echo ""
+	@echo "before you post a question to one of the mailing lists at"
+	@echo "Monitoring Portal:"
+	@echo "http://www.monitoring-portal.org"
+	@echo ""
+	@echo "Also make sure to include pertinent information that could"
+	@echo "help others help you.  This might include:"
+	@echo ""
+	@echo "     - What version of Icinga you are using"
+	@echo ""
+	@echo "*************************************************************"
+	@echo ""
+	@echo "Enjoy."
+	@echo ""
+
+install:
+	$(INSTALL) -m 755 $(INSTALL_OPTS) -d $(DESTDIR)${prefix}
+	$(INSTALL) -m 755 $(COMMAND_OPTS) -d $(DESTDIR)$(LOCALSTATEDIR)
+	$(INSTALL) -m 755 $(COMMAND_OPTS) -d $(DESTDIR)$(LOGDIR)
+
+	cd $(SRC_SHARE) && $(MAKE) $@
+	cd $(SRC_CONFIG) && $(MAKE) $@
+	cd $(SRC_PLUGIN) && $(MAKE) $@
+
+	@echo ""
+	@echo ""
+	@echo ""
+	@echo "Installation if NagTrap succeeded."
+	@echo ""
+	@echo	"Please check the new Apache2 configuration (@HTTPD_CONF@/nagtrap.conf)."
+	@echo ""
+	@echo "You can install it simply by invoking 'make install-webconf'."
+	@echo ""
+	@echo "*************************************************************"
+	@echo ""
+	@echo "Have fun!"
+	@echo ""
+
+install-html:
+	cd $(SRC_SHARE) && $(MAKE) install
+
+install-config:
+	cd $(SRC_CONFIG) && $(MAKE) install
+
+install_log:
+	$(INSTALL) -m 755 $(COMMAND_OPTS) -d $(DESTDIR)$(LOCALSTATEDIR)
+	$(INSTALL) -m 755 $(INSTALL_OPTS_WEB) -d $(DESTDIR)$(LOGDIR)
+
+install-done:
+
+install-plugin:
+	cd $(SRC_PLUGIN) && $(MAKE) $@
+
+install-webconf:
+	$(INSTALL) -m 644 etc/apache2/nagtrap.conf $(DESTDIR)$(HTTPD_CONF);
+
+clean:
+	rm -f Makefile
+	rm -f config.log config.status subst
+
+	cd $(SRC_SHARE) && $(MAKE) $@
+	cd $(SRC_CONFIG) && $(MAKE) $@
+	cd $(SRC_PLUGIN) && $(MAKE) $@
+
+distclean: clean
+	
+	
+create-tarball:
+	./make-tarball --prefix ${PACKAGE_TARNAME}-${PACKAGE_VERSION}/

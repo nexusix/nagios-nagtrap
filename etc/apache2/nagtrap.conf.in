@@ -1,0 +1,16 @@
+# SAMPLE CONFIG SNIPPETS FOR APACHE WEB SERVER
+
+Alias @htmurl@ "@datarootdir@"
+
+<Directory "@datarootdir@">
+   Options None
+   AllowOverride All
+   Order allow,deny
+   Allow from all
+   Order deny,allow
+   AuthName "@basic_authname@"
+   AuthType Basic
+   AuthUserFile @htpasswdusers_file@
+   Require valid-user
+</Directory>
+

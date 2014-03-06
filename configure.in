@@ -1,0 +1,202 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_PREREQ([2.67])
+AC_INIT(nagtrap, 1.5.0, michael_luebben@web.de)
+
+PKG_NAME=nagtrap
+PKG_VERSION="1.5.0"
+PKG_HOME_URL="http://www.monitoring-portal.org/wbb/index.php?page=Board&boardID=59"
+PKG_REL_DATE="31-05-2012"
+AC_SUBST(PKG_NAME)
+AC_SUBST(PKG_VERSION)
+AC_SUBST(PKG_HOME_URL)
+AC_SUBST(PKG_REL_DATE)
+AC_SUBST(ac_configure_args)
+
+AM_INIT_AUTOMAKE
+AC_CANONICAL_HOST
+
+AC_PREFIX_DEFAULT(/usr/local/nagtrap)
+AC_CONFIG_FILES([subst Makefile share/Makefile etc/Makefile plugin/Makefile])
+
+# Checks for programs.
+AC_PATH_PROG(PERL,perl)
+
+# Checks for libraries.
+
+# Checks for header files.
+
+# Checks for typedefs, structures, and compiler characteristics.
+
+# Checks for library functions.
+
+# Define install options
+
+AC_ARG_WITH(monitoring_user,AC_HELP_STRING([--with-monitoring-user=<user>],[sets user name to run nagios/icinga]),monitoring_user=$withval,monitoring_user=nagios)
+AC_ARG_WITH(monitoring_group,AC_HELP_STRING([--with-monitoring-group=<grp>],[sets group name to run nagios/icinga]),monitoring_grp=$withval,monitoring_grp=nagios)
+AC_SUBST(monitoring_user)
+AC_SUBST(monitoring_grp)
+AC_DEFINE_UNQUOTED(DEFAULT_monitoring_USER,"$monitoring_user",[user name to run nagios])
+AC_DEFINE_UNQUOTED(DEFAULT_monitoring_GROUP,"$monitoring_grp",[group name to run nagios])
+INSTALL_OPTS="-o $monitoring_user -g $monitoring_grp"
+AC_SUBST(INSTALL_OPTS)
+
+
+AC_ARG_WITH(command_user,AC_HELP_STRING([--with-command-user=<user>],[sets user name for command access]),command_user=$withval,command_user=$monitoring_user)
+AC_ARG_WITH(command_group,AC_HELP_STRING([--with-command-group=<grp>],[sets group name for command access]),command_grp=$withval,command_grp=$monitoring_grp)
+AC_SUBST(command_user)
+AC_SUBST(command_grp)
+COMMAND_OPTS="-o $command_user -g $command_grp"
+AC_SUBST(COMMAND_OPTS)
+
+
+AC_ARG_WITH(htmurl,AC_HELP_STRING([--with-htmurl=<local-url>],[sets URL for public html]),htmurl=$withval,htmurl=/nagtrap)
+AC_SUBST(htmurl)
+
+
+dnl Check for location of Apache conf.d directory
+HTTP_CONF=no
+AC_ARG_WITH(httpd_conf,AC_HELP_STRING([--with-httpd-conf=<path_to_conf>],[sets path to Apache conf.d directory]),HTTPD_CONF=$withval,HTTPD_CONF=no)
+if test x$HTTPD_CONF = xno; then
+        if test -d /etc/httpd/conf.d; then
+                HTTPD_CONF="/etc/httpd/conf.d"
+        elif test -d /etc/apache2/conf.d; then
+                HTTPD_CONF="/etc/apache2/conf.d"
+        elif test -d /etc/apache/conf.d; then
+                HTTPD_CONF="/etc/apache/conf.d"
+        else
+                HTTPD_CONF="/etc/httpd/conf.d"
+        fi
+fi
+AC_SUBST(HTTPD_CONF)
+
+
+dnl Location of logging path
+LOGDIR=no
+AC_ARG_WITH(log-dir,AC_HELP_STRING([--with-log-dir=<path>],[sets path to logging directory]),LOGDIR=$withval,LOGDIR=no)
+if test x$LOGDIR = xno; then
+        LOGDIR="$localstatedir/log"
+fi
+AC_SUBST(LOGDIR)
+
+
+dnl Check for location of nagios or icinga installation directory
+MONITORING_INSTALLDIR=no
+AC_MSG_CHECKING([for Nagios/Icinga installation])
+AC_ARG_WITH(monitoring_installdir,AC_HELP_STRING([--with-monitoring-install-dir=<path>],[sets path to Nagios/Icinga installation directory]),MONITORING_INSTALLDIR=$withval,MONITORING_INSTALLDIR=no)
+if test x$MONITORING_INSTALLDIR = xno; then
+	AS_IF([ test -d /usr/local/nagios ], [ AC_MSG_RESULT([found]); MONITORING_INSTALLDIR="/usr/local/nagios"; break; ],
+	      [ test -d /usr/local/icinga ], [ AC_MSG_RESULT([found]); MONITORING_INSTALLDIR="/usr/local/icinga"; break; ],
+              [ AC_MSG_RESULT([not found]) ])
+
+	if test x$MONITORING_INSTALLDIR = xno; then
+		echo ""
+		echo ""
+		echo "*** Nagios/Icinga installation directory could not be located... *********"
+		echo ""
+		echo "Nagios/Icinga is required to install NagTrap, the Plugin, etc."
+		echo "Get it from http://nagios.org or http://icinga.org, compile"
+		echo "it. If you use another install directory as default, use the"
+		echo "--with-monitoring-install-dir for the locations of the"
+		echo "installation directory."
+		echo ""
+		echo ""
+		echo "**************************************************************************"
+		echo ""
+		echo ""
+	fi	
+fi
+AC_SUBST(MONITORING_INSTALLDIR)
+
+
+dnl Check for location of htpasswd.users file
+HTPASSWDUSER_FILE=no
+AC_MSG_CHECKING([for htpasswd.users file])
+AC_ARG_WITH(htpasswdusers_file,AC_HELP_STRING([--with-htpasswdusers-file=<path>],[sets path to htpasswd.users file]),HTPASSWDUSERS_FILE=$withval,HTPASSWDUSERS_FILE=no)
+if test x$HTPASSWDUSERS_FILE = xno; then
+        AS_IF([ test -f $MONITORING_INSTALLDIR/etc/htpasswd.users ], [ AC_MSG_RESULT([found]); HTPASSWDUSERS_FILE="$MONITORING_INSTALLDIR/etc/htpasswd.users"; break; ],
+              [ test -f $MONITORING_INSTALLDIR/etc/htpasswd.users ], [ AC_MSG_RESULT([found]); HTPASSWDUSERS_FILE="$MONITORING_INSTALLDIR/etc/htpasswd.users"; break; ],
+              [ AC_MSG_RESULT([not found]) ])
+fi
+AC_SUBST(HTPASSWDUSERS_FILE)
+
+
+dnl Check for location of nagios/icinga libexec directory
+MONITORING_LIBEXECDIR=no
+AC_MSG_CHECKING([for Nagios/Icinga libexec dir])
+AC_ARG_WITH(monitoring_libexecdir,AC_HELP_STRING([--with-monitoring-libexec-dir=<path>],[sets path to libexec directory]),MONITORING_LIBEXECDIR=$withval,MONITORING_LIBEXECDIR=no)
+if test x$MONITORING_LIBEXECDIR = xno; then
+        AS_IF([ test -d $MONITORING_INSTALLDIR/libexec ], [ AC_MSG_RESULT([found]); MONITORING_LIBEXECDIR="$MONITORING_INSTALLDIR/libexec"; break; ],
+              [ AC_MSG_RESULT([not found]) ])
+fi
+AC_SUBST(MONITORING_LIBEXECDIR)
+
+
+#
+# Checking for Perl Modules
+#
+AC_MSG_CHECKING(for Perl Module Time::HiRes)
+$PERL -MTime::HiRes -e exit >/dev/null 2>&1
+if test $? -ne 0; then
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR(Perl Module Time::HiRes not available)
+else
+    AC_MSG_RESULT(yes)
+fi
+
+AC_MSG_CHECKING(for Perl Module Getopt::Long)
+$PERL -MGetopt::Long -e exit >/dev/null 2>&1
+if test $? -ne 0; then
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR(Perl Module Getopt::Long not available)
+else
+    AC_MSG_RESULT(yes)
+fi
+
+
+AC_OUTPUT
+
+
+$PERL subst etc/apache2/nagtrap.conf
+$PERL subst plugin/check_snmptraps.pl
+$PERL subst plugin/check_jobs.pl
+$PERL subst share/include/defines/global.php
+
+
+dnl Review options
+echo ""
+echo ""
+AC_MSG_RESULT([*** Configuration summary for $PKG_NAME $PKG_VERSION $PKG_REL_DATE ***:])
+
+echo ""
+echo " General Options:"
+echo " -------------------------"
+
+AC_MSG_RESULT([    Monitoring user/group:  $monitoring_user,$monitoring_grp])
+AC_MSG_RESULT([       Command user/group:  $command_user,$command_grp])
+AC_MSG_RESULT([   Monitoring install dir:  $MONITORING_INSTALLDIR])
+AC_MSG_RESULT([   Monitoring libexec dir:  $MONITORING_LIBEXECDIR])
+AC_MSG_RESULT([            htpasswd file:  $HTPASSWDUSERS_FILE])
+
+echo ""
+AC_MSG_RESULT([        Install \${prefix}:  $prefix])
+AC_MSG_RESULT([              Include dir:  $includedir])
+AC_MSG_RESULT([               Config dir:  $sysconfdir])
+AC_MSG_RESULT([                  Log dir:  $LOGDIR])
+
+echo ""
+AC_MSG_RESULT([  Apache conf.d directory:  $HTTPD_CONF])
+AC_MSG_RESULT([                  Host OS:  $host_os])
+
+echo ""
+echo " Web Interface Options:"
+echo " ------------------------"
+
+AC_MSG_RESULT([                 HTML URL:  http://localhost$htmurl/])
+
+echo ""
+echo ""
+echo "Review the options above for accuracy.  If they look okay,"
+echo "type 'make install' to install nagtrap."
+echo ""

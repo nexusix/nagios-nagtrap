@@ -1,0 +1,100 @@
+/*
+###########################################################################
+#
+# nagtrap.css -  NagTrap class with funtions to create the frontend
+#
+# Copyright (c) 2006 - 2007 Michael Luebben (nagtrap@nagtrap.org)
+# Last Modified: 25.12.2007
+#
+# License:
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+###########################################################################*/
+
+/* ******************** ----- Links ----- ******************** */
+a:link  {
+   font-family: arial,serif;
+   font-size: 8pt;	 
+   color: #000000;
+   text-decoration: none;
+}
+
+a:visited {
+   font-family: arial,serif;
+   font-size: 8pt;	 
+   color: #000000;
+   text-decoration: none;
+}
+	
+a:hover {
+   font-family: arial,serif;
+   font-size: 8pt;	 
+   color: #339966;
+   text-decoration: none;
+}
+
+/* ******************** ----- Status ----- ******************** */	
+td.statusNormal {
+   font-family: arial,serif;  
+   font-size: 8pt;  
+   background-color: #FFFFFF;
+}
+
+/* ******************** ----- Search ----- ******************** */
+div.updateSearch {
+   width: 350px;
+   background: #FFFFFF;
+   font-family: verdana,arial,serif; color: #000000;
+   font-size: 8pt;
+}	
+
+div.updateSearch ul {
+   border: 1px solid #888;
+   margin: 0;
+   padding: 0;
+   width: 100%;
+   list-style-type: none;
+   font-size: 8pt;
+}
+
+div.updateSearch ul li {
+   margin: 0;
+   padding: 3px;
+   font-size: 8pt;
+}
+
+div.updateSearch ul li.selected {
+   background-color: #F0E68C
+}
+
+div.updateSearch ul strong.highlight {
+   color: #C3C4C3;
+   margin:0;
+   padding:0;
+}
+
+tr.searchField {
+   background: #FFFFE0;
+}
+
+td.searchField {
+   border: 1px solid #888;
+}
+
+input.searchField {
+   background: #FFFFE0;
+   border-style: none;
+   display: block;
+   width: 100%;
+}

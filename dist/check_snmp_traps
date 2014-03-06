@@ -1,0 +1,123 @@
+#!/bin/bash
+#set -xv
+#
+# Script zum prüfen der SNMPTT Datenbank.
+#
+#
+#set -xv
+
+MYSQL=/usr/bin/mysql
+MYSQL_USER=snmptt
+MYSQL_DB=snmptt
+MYSQL_PASS=snmptt
+
+PROGNAME=`/bin/basename $0`
+PROGPATH=`echo $0 | /bin/sed -e 's,[\\/][^\\/][^\\/]*$,,'`
+REVISION="0.0.4"
+
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+
+print_usage() {
+    echo "Usage: $PROGNAME -H <hostname>"
+    echo "Usage: $PROGNAME --help"
+    echo "Usage: $PROGNAME --version"
+}
+
+print_help() {
+    print_revision 
+    echo ""
+    print_usage
+    echo ""
+    echo "Plugin zum auslesen von SNMP Traps aus der Mysql"
+    echo "Datenbank von SNMPTT"
+    echo "weitere Infos unter http://www.nagios-wiki.de/nagios/howtos/snmptt"
+    echo ""
+}
+
+print_revision() {
+    echo -e "$PROGNAME Version $REVISION\n"
+    echo -e "The nagios plugins come with ABSOLUTELY NO WARRANTY. You may redistribute\ncopies of the plugins under the terms of the GNU General Public License.\nFor more information about these matters, see the file named COPYING.\n"
+}
+
+if [ $# -lt 1 ]; then
+    print_usage
+    exit $STATE_UNKNOWN
+fi
+
+
+while test -n "$1"; do
+    case "$1" in
+        --help)
+            print_help
+            exit $STATE_OK
+            ;;
+        -h)
+            print_help
+            exit $STATE_OK
+            ;;
+        --version)
+            print_revision $PROGNAME $VERSION
+            exit $STATE_OK
+            ;;
+        -V)
+            print_revision $PROGNAME $VERSION
+            exit $STATE_OK
+            ;;
+        --hostname)
+            HOST=$2
+            shift
+            ;;
+        -H)
+            HOST=$2
+            shift
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            print_usage
+            exit $STATE_UNKNOWN
+            ;;
+    esac
+    shift
+done
+
+
+# Anzahl der Critical Traps
+COUNT_CRITICAL=`echo "select count(*) from snmptt where hostname like '%$HOST%' and severity = 'CRITICAL' and trapread = '0'" | mysql -s -u $MYSQL_USER --password=$MYSQL_PASS $MYSQL_DB`
+
+if [ $? -gt 0 ]; then
+   echo "UNKNOWN: SQL Select failed"
+   exit $STATE_UNKNOWN
+fi
+
+
+# Anzahl der Warning Traps
+COUNT_WARNING=`echo "select count(*) from snmptt where hostname like '%$HOST%' and severity like 'WARNING' and trapread = '0'" | mysql -s -u $MYSQL_USER --password=$MYSQL_PASS $MYSQL_DB`
+
+if [ $? -gt 0 ]; then
+   echo "UNKNOWN: SQL Select failed"
+   exit $STATE_UNKNOWN
+fi
+
+# Anzahl der Datenbank einträge für den Host
+COUNT=`echo "select count(*) from snmptt where hostname like '%$HOST%'" | mysql -s -u $MYSQL_USER --password=$MYSQL_PASS $MYSQL_DB`
+
+if [ $? -gt 0 ]; then
+   echo "UNKNOWN: SQL Select failed"
+   exit $STATE_UNKNOWN
+fi
+
+if [ $COUNT_CRITICAL -gt 0 ]
+   then
+   echo "CRITICAL: $COUNT_CRITICAL Critical Traps for $HOST. $COUNT Traps in Database"
+   exit $STATE_CRITICAL
+elif [ $COUNT_WARNING -gt 0 ]
+   then
+   echo "WARNING: $COUNT_WARNING Warning Traps for $HOST. $COUNT Traps in Database"
+   exit $STATE_WARNING
+else
+   echo "OK: No Warning or Critical Traps for $HOST. $COUNT Traps in Database"
+   exit $STATE_OK
+fi

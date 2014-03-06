@@ -1,0 +1,173 @@
+#!/usr/bin/perl
+#
+# check_jobs.pl - icing/nagios plugin to check jobs
+#
+#
+# Copyright (C) 2011 Michael Luebben
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#
+# ==================== Database connect information ====================
+my $dbHost = "localhost";
+my $dbName = "nagtrap";
+my $dbUser = "root";
+my $dbPass = "";
+my $dbTable = "snmptt_jobs";
+
+# ==================== Debugging ====================
+my $enableDebug = "0";
+my $debugLogFile = "@logdir@/check_jobs.log";
+
+# ==================== Variables ====================
+my ($opt_V, $opt_h, $opt_t, $opt_T);
+my $PROGNAME = "check_jobs.pl";
+my $version = "1.3";
+my $dbQuery;
+my $HiResTime;
+my $startTime;
+my $endTime;
+my $executeTime;
+my $jobResult;
+my $exitCode;
+
+# ==================== Load Perl modules ====================
+use strict;
+use Getopt::Long;
+use vars qw($PROGNAME);
+use lib "@monitoring_libexecdir@"; # Pfad zur util.pm !!
+use utils qw($TIMEOUT %ERRORS &print_revision &support);
+use Time::HiRes qw(time);
+use DBI();
+
+# ==================== Functions ====================
+# Print Usage
+sub print_usage (){
+   printf "\nUsage:\n";
+   printf "   -T (--type)\n";
+   printf "     Job type (archived or deleted)\n";
+   printf "   -t (--timeout)\n";
+   printf "     seconds before the plugin times out (default=$TIMEOUT)\n";
+   printf "   -V (--version)\n";
+   printf "     Plugin version\n";
+   printf "   -h (--help)\n";
+   printf "     Print this help \n";
+}
+
+# Print help
+sub print_help () {
+   printf "Copyright (c) 2012 Michael Luebben\n\n";
+   printf "check_jobs.pl plugin\n";
+   print_usage();
+   printf "\n";
+   print_revision($PROGNAME, '$Revision: 1.3 $');
+}
+
+# ==================== Debugging ====================
+# SYNTAX: debugLog(<Option>,<Message>);
+# Options:
+#   0 = Make a start entry into the debugLog debugLog
+#   1 = Write message to debugLog debugLog
+#   2 = Make a stop entry into the debugLog debugLog
+sub debug {
+   if ($enableDebug == 1) {
+      my $option = $_[0];
+      my $value = $_[1];
+      $HiResTime = sprintf("%.5f", time());
+      open(debugLog, ">>$debugLogFile");
+         if ($option == 0) {
+            $startTime = $HiResTime;
+            print debugLog $HiResTime." ---------------===== Start debugging =====---------------\n";
+            print debugLog $HiResTime." Plugin-Version: ".$version."\n";
+         } elsif ($option == 1) {
+            chomp($value);
+            if($value) {
+               print debugLog $HiResTime." ".$value."\n";
+            }
+         } elsif ($option == 2) {
+            $endTime = sprintf("%.5f", time());
+            $executeTime = $endTime - $value;
+            $executeTime = sprintf("%.2f",$executeTime);
+            print debugLog $HiResTime." Plugin executen time ".$executeTime."s\n";
+            print debugLog $HiResTime." ---------------===== Stop debugging =====----------------\n\n";
+         }
+      close(debugLog);
+   }
+}
+
+# ==================== Get options ====================
+Getopt::Long::Configure('bundling');
+GetOptions(
+   "t=i" => \$opt_t, "timeout"  => \$opt_t,
+   "T=s" => \$opt_T, "type"  => \$opt_T,
+   "V"   => \$opt_V, "version"  => \$opt_V,
+   "h"   => \$opt_h, "help"     => \$opt_h);
+
+# ==================== Main ====================
+if ($opt_t) {
+   $TIMEOUT=$opt_t;
+}
+ 
+# Just in case of problems, let's not hang Nagios
+$SIG{'ALRM'} = sub {
+   print "CRITCAL - Plugin Timed out\n";
+   &debug(1,"CRITCAL - Plugin Timed out");
+   exit $ERRORS{"CRITICAL"};
+};
+alarm($TIMEOUT);
+
+&debug(0);
+
+# Connect to the database.
+my $dbConnect = DBI->connect("DBI:mysql:database=$dbName;host=$dbHost","$dbUser","$dbPass") ||
+   die "ERROR - Can't connect to MySQL-Database: ".$DBI::errstr."\n";
+&debug(1,"Connect to DB: TRUE");
+
+if ($opt_T eq 'archived') {
+	$dbQuery = $dbConnect->prepare("SELECT jobstate, count, jobtime, message FROM $dbTable WHERE type='archive'");
+	&debug(1,"Query: SELECT jobstate, count, jobtime, message FROM ".$dbTable." WHERE type='archive'");
+	$dbQuery->execute();
+	$jobResult = $dbQuery->fetchrow_hashref();
+} elsif ($opt_T eq 'deleted') {
+	$dbQuery = $dbConnect->prepare("SELECT jobstate, count, jobtime, message FROM $dbTable WHERE type='delete'");
+	&debug(1,"Query: SELECT jobstate, count, jobtime, message FROM ".$dbTable." WHERE type='delete'");
+	$dbQuery->execute();
+	$jobResult = $dbQuery->fetchrow_hashref();
+} else {
+	printf "Unknown type $opt_T!\n";
+	&debug(1,"Unknown type ".$opt_T."!");
+	&debug(1,"Exit code: ".$ERRORS{'UNKNOWN'});
+	&debug(2,$startTime);
+	exit $ERRORS{'UNKNOWN'};
+}
+
+# Change unix timestamp
+my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($jobResult->{jobtime});
+my $date = sprintf "%02d.%02d.%04d/%02d:%02d" , $mday , $mon+=1 ,$year+=1900 , $hour , $min ;
+
+if($jobResult->{jobstate} == $ERRORS{'OK'}) {
+	printf "OK - $date: $jobResult->{count} traps successfully $opt_T|'$opt_T traps='$jobResult->{count};;;;\n";
+	&debug(1,"Output: OK - ".$date.":".$jobResult->{count}." traps successfully ".$opt_T."|'".$opt_T." traps='".$jobResult->{count}.";;;;");
+	$exitCode = $ERRORS{'OK'};
+}
+
+if($jobResult->{jobstate} == $ERRORS{'CRITICAL'}) {
+	printf "CRITICAL - $date: No traps $opt_T - Error: $jobResult->{message}|'$opt_T traps='$jobResult->{count};;;;\n";
+	&debug(1,"Output: CRITICAL - ".$date.":No traps ".$opt_T." - Error: ".$jobResult->{message}."|'".$opt_T." traps='".$jobResult->{count}.";;;;");
+	$exitCode = $ERRORS{'CRITICAL'};
+}
+&debug(1,"Exit code: ".$exitCode);
+&debug(2,$startTime);
+exit $exitCode;

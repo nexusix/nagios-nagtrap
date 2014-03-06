@@ -1,0 +1,47 @@
+####################################################################
+# Makefile for NagTrap
+####################################################################
+
+
+###############################
+# Compiler Settings
+###############################
+CC=@CC@
+CFLAGS=@CFLAGS@ @DEFS@
+LDFLAGS=@LDFLAGS@ @LIBS@
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+INSTALL=@INSTALL@
+INSTALL_OPTS=@INSTALL_OPTS@
+SYSCONFDIR=@sysconfdir@
+DATAROOTDIR=@datarootdir@
+MONITORING_LIBEXECDIR=@MONITORING_LIBEXECDIR@
+
+###############################
+# Tools
+###############################
+MKDIR=/bin/mkdir
+
+###############################
+# Global
+###############################
+PACKAGE_TARNAME=@PACKAGE_TARNAME@
+PACKAGE_NAME=@PACKAGE_NAME@
+PACKAGE_VERSION=@PACKAGE_VERSION@
+
+
+###############################
+# Installation
+###############################
+
+install:
+	for file in *.pl; \
+		do $(INSTALL) -m 755 $(INSTALL_OPTS) $$file $(DESTDIR)$(MONITORING_LIBEXECDIR); done
+
+clean:
+	rm -f Makefile
+	rm -f check_snmptraps.pl
+	rm -f check_jobs.pl
+
+distclean: clean
